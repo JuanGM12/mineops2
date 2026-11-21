@@ -20,12 +20,13 @@ public sealed class AuthEndpointTests(IdentityApiFixture fixture)
     }
 
     [Theory]
-    [InlineData("admin@mineops.local", "Administrator")]
-    [InlineData("planner@mineops.local", "Planner")]
-    [InlineData("maintenance@mineops.local", "MaintenanceSupervisor")]
-    [InlineData("operator@mineops.local", "Operator")]
+    [InlineData("admin@mineops.local", "MineOps Administrator", "Administrator")]
+    [InlineData("planner@mineops.local", "MineOps Planner", "Planner")]
+    [InlineData("maintenance@mineops.local", "Maintenance Supervisor", "MaintenanceSupervisor")]
+    [InlineData("operator@mineops.local", "MineOps Operator", "Operator")]
     public async Task ValidLoginReturnsSignedTokenWithExpectedClaims(
         string email,
+        string expectedName,
         string expectedRole)
     {
         var response = await fixture.Client.PostAsJsonAsync(
@@ -44,11 +45,42 @@ public sealed class AuthEndpointTests(IdentityApiFixture fixture)
         Assert.Equal("MineOps.Identity", jwt.Issuer);
         Assert.Contains("MineOps.Api", jwt.Audiences);
         Assert.Equal(email, principal.FindFirstValue(JwtRegisteredClaimNames.Email));
+        Assert.Equal(expectedName, principal.FindFirstValue(JwtRegisteredClaimNames.Name));
         Assert.False(string.IsNullOrWhiteSpace(principal.FindFirstValue(JwtRegisteredClaimNames.Sub)));
-        Assert.False(string.IsNullOrWhiteSpace(principal.FindFirstValue(JwtRegisteredClaimNames.Name)));
-        Assert.Contains(principal.FindAll("role"), claim => claim.Value == expectedRole);
-        Assert.Equal(login.ExpiresAt.ToUnixTimeSeconds(), new DateTimeOffset(jwt.ValidTo).ToUnixTimeSeconds());
+        var userClaimTypes = jwt.Claims
+            .Where(claim => claim.Type is JwtRegisteredClaimNames.Sub
+                or JwtRegisteredClaimNames.Name
+                or JwtRegisteredClaimNames.Email
+                or "role")
+            .Select(claim => claim.Type)
+            .OrderBy(type => type);
+        Assert.Equal(["email", "name", "role", "sub"], userClaimTypes);
+        Assert.Equal(expectedRole, Assert.Single(principal.FindAll("role")).Value);
+        Assert.Equal(login.ExpiresAt.ToUnixTimeSeconds(), jwt.Payload.Expiration.GetValueOrDefault());
         Assert.True(login.ExpiresAt > DateTimeOffset.UtcNow);
+    }
+
+    [Theory]
+    [InlineData("", IdentityApiFixture.Password)]
+    [InlineData("invalid-email", IdentityApiFixture.Password)]
+    [InlineData("planner@mineops.local", "")]
+    public async Task InvalidLoginRequestReturnsBadRequest(string email, string password)
+    {
+        var response = await fixture.Client.PostAsJsonAsync(
+            "/api/auth/login",
+            new LoginRequest(email, password));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task LoginEmailComparisonIsCaseInsensitive()
+    {
+        var response = await fixture.Client.PostAsJsonAsync(
+            "/api/auth/login",
+            new LoginRequest("PLANNER@MINEOPS.LOCAL", IdentityApiFixture.Password));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]

@@ -19,7 +19,7 @@ public sealed class IdentityApiFixture : IAsyncLifetime
     public IdentityApiFixture()
     {
         DatabaseName = $"{DatabasePrefix}{Guid.NewGuid():N}";
-        ConnectionString = $"Server=localhost;Database={DatabaseName};Integrated Security=true;TrustServerCertificate=true";
+        ConnectionString = $"Server=localhost;Database={DatabaseName};Integrated Security=true;Encrypt=false;TrustServerCertificate=true";
     }
 
     public string DatabaseName { get; }
