@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using MineOps.Identity.Api.Errors;
 using MineOps.Identity.Application.Auth;
 using MineOps.Identity.Infrastructure.Identity;
@@ -25,6 +26,14 @@ public sealed class AuthController(
                 false,
                 "The request is invalid.",
                 ["Email and password are required."]));
+        }
+
+        if (!new EmailAddressAttribute().IsValid(request.Email.Trim()))
+        {
+            return BadRequest(new ErrorResponse(
+                false,
+                "The request is invalid.",
+                ["Email must be a valid email address."]));
         }
 
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
