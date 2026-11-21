@@ -30,6 +30,24 @@ public sealed class PlanningSecurityTests(PlanningApiFixture fixture)
     }
 
     [Fact]
+    public async Task TokensWithWrongIssuerOrAudienceReturn401()
+    {
+        using var wrongIssuerClient = fixture.CreateClient(TestJwtTokens.Create(
+            "Operator",
+            issuer: "Untrusted.Identity"));
+        using var wrongAudienceClient = fixture.CreateClient(TestJwtTokens.Create(
+            "Operator",
+            audience: "Untrusted.Api"));
+
+        Assert.Equal(
+            HttpStatusCode.Unauthorized,
+            (await wrongIssuerClient.GetAsync("/api/activities")).StatusCode);
+        Assert.Equal(
+            HttpStatusCode.Unauthorized,
+            (await wrongAudienceClient.GetAsync("/api/activities")).StatusCode);
+    }
+
+    [Fact]
     public async Task PlannerCreatesActivityButMaintenanceSupervisorGets403()
     {
         using var planner = fixture.CreateClient(TestJwtTokens.Create("Planner"));
@@ -38,6 +56,8 @@ public sealed class PlanningSecurityTests(PlanningApiFixture fixture)
 
         Assert.Equal(HttpStatusCode.Created,
             (await planner.PostAsJsonAsync("/api/activities", body)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK,
+            (await maintenance.GetAsync("/api/activities")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden,
             (await maintenance.PostAsJsonAsync("/api/activities", ActivityBody($"DENY-{Guid.NewGuid():N}"))).StatusCode);
     }
@@ -56,6 +76,25 @@ public sealed class PlanningSecurityTests(PlanningApiFixture fixture)
         Assert.Equal(HttpStatusCode.OK, (await operatorClient.PatchAsync($"/api/activities/{id}/complete", null)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden,
             (await operatorClient.PostAsJsonAsync("/api/activities", ActivityBody($"OP-DENY-{Guid.NewGuid():N}"))).StatusCode);
+    }
+
+    [Fact]
+    public async Task OperatorCannotUpdateOrCancelActivity()
+    {
+        using var planner = fixture.CreateClient(TestJwtTokens.Create("Planner"));
+        using var operatorClient = fixture.CreateClient(TestJwtTokens.Create("Operator"));
+        var created = await planner.PostAsJsonAsync(
+            "/api/activities",
+            ActivityBody($"OP-ADMIN-DENY-{Guid.NewGuid():N}"));
+        using var json = JsonDocument.Parse(await created.Content.ReadAsStringAsync());
+        var id = json.RootElement.GetProperty("id").GetGuid();
+
+        Assert.Equal(
+            HttpStatusCode.Forbidden,
+            (await operatorClient.PutAsJsonAsync($"/api/activities/{id}", UpdateBody())).StatusCode);
+        Assert.Equal(
+            HttpStatusCode.Forbidden,
+            (await operatorClient.PatchAsync($"/api/activities/{id}/cancel", null)).StatusCode);
     }
 
     [Fact]
@@ -79,5 +118,17 @@ public sealed class PlanningSecurityTests(PlanningApiFixture fixture)
         priority = "High",
         scheduledDate = DateTimeOffset.UtcNow.AddDays(1),
         dueDate = DateTimeOffset.UtcNow.AddDays(2)
+    };
+
+    private static object UpdateBody() => new
+    {
+        title = "Unauthorized update",
+        description = "Operator must not update activities",
+        area = "Operations",
+        location = "Mine",
+        responsibleId = (Guid?)null,
+        priority = "High",
+        scheduledDate = DateTimeOffset.UtcNow.AddDays(3),
+        dueDate = DateTimeOffset.UtcNow.AddDays(4)
     };
 }
