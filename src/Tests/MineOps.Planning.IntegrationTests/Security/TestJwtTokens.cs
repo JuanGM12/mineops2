@@ -9,12 +9,16 @@ internal static class TestJwtTokens
 {
     private const string SigningKey = "MineOps-Development-Only-Signing-Key-2026-Change-Me!";
 
-    public static string Create(string role, bool expired = false)
+    public static string Create(
+        string role,
+        bool expired = false,
+        string issuer = "MineOps.Identity",
+        string audience = "MineOps.Api")
     {
         var now = DateTime.UtcNow;
         var token = new JwtSecurityToken(
-            issuer: "MineOps.Identity",
-            audience: "MineOps.Api",
+            issuer: issuer,
+            audience: audience,
             claims:
             [
                 new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
