@@ -1,0 +1,21 @@
+@MaintenanceHost = http://localhost:5003
+@EquipmentId = 00000000-0000-0000-0000-000000000000
+
+GET {{MaintenanceHost}}/health
+
+###
+POST {{MaintenanceHost}}/api/work-orders
+Content-Type: application/json
+
+{
+  "code": "WO-001",
+  "equipmentId": "{{EquipmentId}}",
+  "title": "Inspección preventiva",
+  "description": "Revisión programada",
+  "maintenanceType": "Preventive",
+  "priority": "High",
+  "scheduledDate": "2026-11-21T13:00:00Z"
+}
+
+###
+GET {{MaintenanceHost}}/api/work-orders?page=1&pageSize=20

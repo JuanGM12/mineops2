@@ -1,0 +1,13 @@
+@IdentityHost = http://localhost:5001
+
+GET {{IdentityHost}}/health
+
+###
+
+POST {{IdentityHost}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "planner@mineops.local",
+  "password": "MineOps2026!"
+}
