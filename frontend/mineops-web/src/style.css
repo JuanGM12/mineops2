@@ -1,0 +1,173 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+:root {
+  font-family: "DM Sans", sans-serif;
+  color: #1b2a38;
+  background: #f5f7f8;
+  font-synthesis: none;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+h1,
+h2,
+h3 {
+  font-family: Manrope, sans-serif;
+}
+input,
+select,
+textarea {
+  outline: none;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #148577 !important;
+  box-shadow: 0 0 0 3px #14857722;
+}
+.card {
+  background: white;
+  border: 1px solid #e7ecef;
+  border-radius: 18px;
+  box-shadow: 0 7px 30px #12303d08;
+}
+.field {
+  width: 100%;
+  border: 1px solid #dbe3e7;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #1b2a38;
+}
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #5f7180;
+  display: block;
+  margin-bottom: 6px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  padding: 10px 15px;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.18s;
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-primary {
+  color: #fff;
+  background: #117b70;
+}
+.btn-primary:hover:not(:disabled) {
+  background: #0c655d;
+}
+.btn-light {
+  color: #294250;
+  background: #f1f5f6;
+  border: 1px solid #e1e9eb;
+}
+.btn-light:hover:not(:disabled) {
+  background: #e5edef;
+}
+.btn-danger {
+  color: #a74242;
+  background: #fff3f2;
+  border: 1px solid #f2d6d4;
+}
+.table-scroll {
+  overflow: auto;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 780px;
+}
+.data-table th {
+  text-align: left;
+  background: #f8fafb;
+  color: #778996;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  padding: 15px 20px;
+}
+.data-table td {
+  border-top: 1px solid #eef2f3;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: #344957;
+}
+.data-table tbody tr:hover {
+  background: #f9fbfb;
+}
+.skeleton {
+  background: linear-gradient(100deg, #edf2f3 25%, #f8fafb 45%, #edf2f3 65%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  to {
+    background-position-x: -200%;
+  }
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #0919239c;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 30px 80px #09192344;
+  width: min(100%, 620px);
+  max-height: 90vh;
+  overflow: auto;
+}
+.status-Pending {
+  color: #a46b14;
+  background: #fff3da;
+}
+.status-InProgress {
+  color: #1d65a1;
+  background: #e8f3fc;
+}
+.status-Completed {
+  color: #25805a;
+  background: #e4f6eb;
+}
+.status-Cancelled {
+  color: #b34d4c;
+  background: #ffeded;
+}
+.priority-Critical {
+  color: #b34d4c;
+}
+.priority-High {
+  color: #a46b14;
+}
