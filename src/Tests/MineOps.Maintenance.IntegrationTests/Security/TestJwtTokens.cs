@@ -7,14 +7,20 @@ namespace MineOps.Maintenance.IntegrationTests.Security;
 
 internal static class TestJwtTokens
 {
+    private const string DefaultIssuer = "MineOps.Identity";
+    private const string DefaultAudience = "MineOps.Api";
     private const string SigningKey = "MineOps-Development-Only-Signing-Key-2026-Change-Me!";
 
-    public static string Create(string role, bool expired = false)
+    public static string Create(
+        string role,
+        bool expired = false,
+        string issuer = DefaultIssuer,
+        string audience = DefaultAudience)
     {
         var now = DateTime.UtcNow;
         var token = new JwtSecurityToken(
-            issuer: "MineOps.Identity",
-            audience: "MineOps.Api",
+            issuer: issuer,
+            audience: audience,
             claims:
             [
                 new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
